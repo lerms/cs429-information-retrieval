@@ -21,8 +21,7 @@ def tokenize(document):
     >>> tokenize("Hi  there. What's going on?")
     ['hi', 'there', 'what', 's', 'going', 'on']
     """
-    ###TODO
-    pass
+    return [x.lower() for x in re.findall('\w+', document)] #works, but I'm sure there is a better way
 
 
 def create_index(tokens):
