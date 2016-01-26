@@ -21,7 +21,7 @@ def tokenize(document):
     >>> tokenize("Hi  there. What's going on?")
     ['hi', 'there', 'what', 's', 'going', 'on']
     """
-    return [x.lower() for x in re.findall('\w+', document)] #works, but I'm sure there is a better way
+    return [x.lower() for x in re.findall('\w+', document)]  # works, but I'm sure there is a better way
 
 
 def create_index(tokens):
@@ -43,8 +43,14 @@ def create_index(tokens):
     >>> index['b']
     [0]
     """
-    ###TODO
-    pass
+    index = defaultdict(list)
+    for i, token in enumerate(tokens):
+        for term in token:
+            if index.get(term, False):  # cool pythonic way to determine if a key maps to a value
+                index[term].append(i)
+            else:
+                index[term] = [i]
+    return index
 
 
 def intersect(list1, list2):
@@ -62,8 +68,18 @@ def intersect(list1, list2):
     >>> intersect([1, 2], [3, 4])
     []
     """
-    ###TODO
-    pass
+    answer = []
+    i, j = 0, 0
+    while i < len(list1) and j < len(list2):
+        if list1[i] == list2[j]:
+            answer.append(list1[i])
+            i += 1
+            j += 1
+        elif list1[i] < list2[j]:
+            i += 1
+        else:
+            j += 1
+    return answer
 
 
 def sort_by_num_postings(words, index):
@@ -81,7 +97,7 @@ def sort_by_num_postings(words, index):
     >>> sort_by_num_postings(['a', 'b', 'c'], {'a': [0, 1], 'b': [1, 2, 3], 'c': [4]})
     ['c', 'a', 'b']
     """
-    ###TODO
+    ##TODO
     pass
 
 
