@@ -1,4 +1,7 @@
-""" Assignment 0
+"""
+Alexander Lerma | CS 429 - Spring 2016
+
+Assignment 0
 
 You will implement a simple in-memory boolean search engine over the jokes
 from http://web.hawkesnest.net/~jthens/laffytaffy/.
@@ -21,7 +24,8 @@ def tokenize(document):
     >>> tokenize("Hi  there. What's going on?")
     ['hi', 'there', 'what', 's', 'going', 'on']
     """
-    return [x.lower() for x in re.findall('\w+', document)]  # works, but I'm sure there is a better way
+    # found it, lowercase the doc to prevent a second iteration
+    return [term for term in re.findall('\w+', document.lower())]
 
 
 def create_index(tokens):
@@ -50,6 +54,7 @@ def create_index(tokens):
                 index[term].append(i)
             else:
                 index[term] = [i]
+    sorted(index.values())
     return index
 
 
@@ -97,8 +102,12 @@ def sort_by_num_postings(words, index):
     >>> sort_by_num_postings(['a', 'b', 'c'], {'a': [0, 1], 'b': [1, 2, 3], 'c': [4]})
     ['c', 'a', 'b']
     """
-    ##TODO
-    pass
+    answer = defaultdict(lambda x: sorted(x))
+    for word in words:
+        if index.get(word, False):
+            answer[len(index[word])] = word
+
+    return [word for word in answer.values()]
 
 
 def search(index, query):
@@ -120,8 +129,14 @@ def search(index, query):
     >>> search({'a': [0, 1], 'b': [1, 2, 3], 'c': [4]}, 'a b')
     [1]
     """
-    ###TODO
-    pass
+    terms = sort_by_num_postings(tokenize(query), index)
+    result = []
+    if len(terms) == 0:  # avoiding extra work
+        return result
+    result = index[terms.pop(0)]  # need to pop first element to use in first loop iteration
+    for i, term in enumerate(terms):
+        result = intersect(result, index[terms[i]])
+    return result
 
 
 def main():
