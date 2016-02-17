@@ -22,7 +22,6 @@ import re
 
 
 class Index(object):
-
     def __init__(self, filename=None, champion_threshold=10):
         """ DO NOT MODIFY.
         Create a new index by parsing the given file containing documents,
@@ -48,8 +47,12 @@ class Index(object):
         >>> lengths[0]
         5.0
         """
-        ###TODO
-        pass
+        result = defaultdict(list)
+        for term in index:
+            for i in range(0, len(index[term]), 1):
+                result[index[term][i][0]].append(index[term][i][1])
+
+        return {k: sum(map(lambda x: x ** 2, v)) ** 0.5 for k, v in result.items()}
 
     def create_champion_index(self, index, threshold=10):
         """
@@ -65,8 +68,10 @@ class Index(object):
         >>> champs['a']
         [[1, 20], [2, 15]]
         """
-        ###TODO
-        pass
+        result = {}
+        for term in index:
+            result[term] = sorted(index[term], key=lambda x: x[1], reverse=True)[:threshold]
+        return result
 
     def create_tfidf_index(self, docs, doc_freqs):
         """
@@ -94,8 +99,13 @@ class Index(object):
         >>> index['b']  # doctest:+ELLIPSIS
         [[0, 0.301...]]
         """
-        ###TODO
-        pass
+        result = defaultdict(list)
+        for docid, doc in enumerate(docs):
+            for term in doc:
+                tf_idf = [docid, (1 + math.log10(doc.count(term))) * (math.log10(len(docs) / doc_freqs[term]))]
+                if tf_idf not in result[term]:
+                    result[term].append(tf_idf)
+        return result
 
     def count_doc_frequencies(self, docs):
         """ Return a dict mapping terms to document frequency.
@@ -107,8 +117,12 @@ class Index(object):
         >>> res['c']
         1
         """
-        ###TODO
-        pass
+        result = defaultdict(list)
+        for key, doc in enumerate(docs):
+            for term in doc:
+                if key not in result[term]:
+                    result[term].append(key)
+        return {k: len(v) for k, v in result.items()}
 
     def query_to_vector(self, query_terms):
         """ Convert a list of query terms into a dict mapping term to inverse document frequency (IDF).
@@ -123,8 +137,12 @@ class Index(object):
         Returns:
           A dict from query term to IDF.
         """
-        ###TODO
-        pass
+        vectors = defaultdict(float)
+        for term in query_terms:
+            if self.index.get(term, False):
+                vectors[term] = float(math.log10(len(self.documents) / self.doc_freqs[term]))
+
+        return vectors
 
     def search_by_cosine(self, query_vector, index, doc_lengths):
         """
@@ -147,8 +165,12 @@ class Index(object):
         >>> Index().search_by_cosine({'a': 1}, {'a': [[0, 1], [1, 2]]}, {0: 1, 1: 1})
         [(1, 2.0), (0, 1.0)]
         """
-        ###TODO
-        pass
+        result = []
+        for term in query_vector:
+            for i in range(0, len(index[term]), 1):
+                cosine = (index[term][i][1] * query_vector[term]) / (doc_lengths[index[term][i][0]])
+                result.append((index[term][i][0], cosine))
+        return sorted(result, key=lambda v: v[1], reverse=True)
 
     def search(self, query, use_champions=False):
         """ Return the document ids for documents matching the query. Assume that
@@ -164,8 +186,12 @@ class Index(object):
         query...........raw query string, possibly containing multiple terms (though boolean operators do not need to be supported)
         use_champions...If True, Step 4 above will use only the champion index to perform the search.
         """
-        ###TODO
-        pass
+        tokens = self.tokenize(query)
+        idf = self.query_to_vector(tokens)
+        if use_champions:
+            return self.search_by_cosine(idf, self.champion_index, self.doc_lengths)
+        else:
+            return self.search_by_cosine(idf, self.index, self.doc_lengths)
 
     def read_lines(self, filename):
         """ DO NOT MODIFY.
@@ -195,5 +221,8 @@ def main():
         print('\n\nQUERY=%s Using Champion List' % query)
         print('\n'.join(['%d\t%e' % (doc_id, score) for doc_id, score in indexer.search(query, True)[:10]]))
 
+
 if __name__ == '__main__':
     main()
+
+main()

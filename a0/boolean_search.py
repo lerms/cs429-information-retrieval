@@ -25,6 +25,10 @@ def tokenize(document):
     ['hi', 'there', 'what', 's', 'going', 'on']
     """
     # found it, lowercase the doc to prevent a second iteration
+    list = []
+    for term in re.findall('\w+', document.lower()):
+        list.append(term)
+
     return [term for term in re.findall('\w+', document.lower())]
 
 
@@ -102,6 +106,9 @@ def sort_by_num_postings(words, index):
     >>> sort_by_num_postings(['a', 'b', 'c'], {'a': [0, 1], 'b': [1, 2, 3], 'c': [4]})
     ['c', 'a', 'b']
     """
+
+
+    {2 : ['a']}
     answer = defaultdict(lambda x: sorted(x))
     for word in words:
         if index.get(word, False):
