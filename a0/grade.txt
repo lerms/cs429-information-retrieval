@@ -33,7 +33,7 @@ source:
 Failing test: test_search_unk:  @points=3
         Test case where query term is not in index. 
 Traceback (most recent call last):
-  File "assignments-sol/a0/a0_test.py", line 83, in test_search_unk
+  File "assignments-sol/a0/a0_test.py", line 87, in test_search_unk
     [])
 AssertionError: Lists differ: [0, 1, 2, 10] != []
 
@@ -48,7 +48,11 @@ source:
     def test_search_unk(self):
          """ @points=3
          Test case where query term is not in index. """
-         self.assertListEqual(list(search({'a': [0, 1, 2, 10], 'b': [1, 2, 3], 'c': [0, 1, 2, 4]}, 'a zebra')),
+         idx = defaultdict(list)
+         idx['a'] = [0, 1, 2, 10]
+         idx['b'] = [1, 2, 3]
+         idx['c'] = [0, 1, 2, 4]
+         self.assertListEqual(list(search(idx, 'a zebra')),
                               [])
 --------------
 
