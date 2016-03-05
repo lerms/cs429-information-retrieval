@@ -1,7 +1,6 @@
 from collections import defaultdict
 import tarfile
 import tabulate
-
 import index, evaluate, score
 
 
@@ -21,8 +20,14 @@ def parse_relevance_strings(strings):
     >>> sorted(result.items())
     [(1, [268, 288, 304]), (2, [326, 334])]
     """
-    ###TODO
-    pass
+    parsed = defaultdict(list)
+    for i in strings:
+        if i:
+            num = i.split()
+            nums = [int(x) for x in num[1:]]
+            parsed[int(num[0])] = nums
+
+    return parsed
 
 
 def read_relevances(fname):
@@ -56,13 +61,28 @@ def parse_query_strings(strings):
     ... *STOP'''
     >>> res = parse_query_strings(string.split('\n'))
     >>> print('%s' % res[1])
-    KENNEDY ADMINISTRATION PRESSURE ON NGO DINH DIEM TO STOP SUPPRESSING THE BUDDHISTS . 
+    KENNEDY ADMINISTRATION PRESSURE ON NGO DINH DIEM TO STOP SUPPRESSING THE BUDDHISTS .
     >>> print('%s' % res[2])
-    EFFORTS OF AMBASSADOR HENRY CABOT LODGE TO GET VIET NAM'S PRESIDENT DIEM TO CHANGE HIS POLICIES OF POLITICAL REPRESSION . 
+    EFFORTS OF AMBASSADOR HENRY CABOT LODGE TO GET VIET NAM'S PRESIDENT DIEM TO CHANGE HIS POLICIES OF POLITICAL REPRESSION .
     """
-    ###TODO
-    pass
-
+    parsed = defaultdict(lambda x: str(x))
+    docID = 0
+    acc = ''
+    for string in strings:
+        if string.startswith('*FIND') or string.startswith('*STOP'):
+            if(docID > 0):
+                parsed[docID] = acc
+            acc = ''
+            if string.startswith('*FIND'):
+                docID = int(string.split()[-1])
+            else:
+                break
+        else:
+            if string:
+                if acc:
+                    acc += ' '
+                acc += string
+    return parsed
 
 def read_queries(fname):
     """  Do not modify. Read a map from query id to text."""
@@ -89,8 +109,12 @@ def parse_document_strings(strings):
     >>> parse_document_strings(string.split('\n'))
     ['THE ALLIES AFTER NASSAU ', 'THE ROAD TO JAIL IS PAVED WITH ']
     """
-    ###TODO
-    pass
+    parsed = []
+    for string in strings:
+        if string:
+            if not string.startswith('*'):
+                parsed.append(string + ' ')
+    return parsed
 
 
 def read_documents(fname):
@@ -143,8 +167,11 @@ def search(query, scorer, index):
     Returns:
       A list of document ids in descending order of relevance to the query.
     """
-    ###TODO
-    pass
+    tokens = index.tokenize(query)
+    vect = index.query_to_vector(tokens)
+    scores = scorer.score(vect, index)
+    scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    return scores.keys()
 
 
 def run_all(queries, relevances, docs, indexer, scorers, evaluators, NHITS):

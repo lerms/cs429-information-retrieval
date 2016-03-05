@@ -3,12 +3,10 @@
 from collections import Counter, defaultdict
 import math
 import re
-
-import numpy as np
+import numpy
 
 
 class Index(object):
-
     def __init__(self, docs=None):
         """ Do not modify.
         Create a new index by parsing the given file containing documents,
@@ -51,8 +49,14 @@ class Index(object):
         >>> norms[0] # doctest:+ELLIPSIS
         0.444...
         """
-        ###TODO
-        pass
+
+        pre_norm = defaultdict(float)
+        for term in index:
+            for i in range(0, len(index[term]), 1):
+                td_idf = ((1 + math.log10(index[term][i][1])) * (math.log10(n_docs / doc_freqs[term])))
+                pre_norm[index[term][i][0]] += (td_idf ** 2)
+
+        return {k: math.sqrt(v) for k, v in pre_norm.items()}
 
     def compute_doc_lengths(self, index):
         """
@@ -71,8 +75,12 @@ class Index(object):
         >>> mean
         6.0
         """
-        ###TODO
-        pass
+        lengths = defaultdict(float)
+        for term in index:
+            for i in range(0, len(index[term]), 1):
+                lengths[index[term][i][0]] += index[term][i][1]
+
+        return lengths, sum(lengths.values()) / len(lengths)
 
     def create_tf_index(self, docs, doc_freqs):
         """
@@ -98,8 +106,19 @@ class Index(object):
         >>> index['a']
         [[1, 2.0], [2, 1.0]]
         """
-        ###TODO
-        pass
+        tf_index = defaultdict(list)
+        doc_id = 1
+        for doc in docs:
+            for term in doc:
+                tf_weight = [doc_id, float(doc.count(term))]
+                if tf_weight not in tf_index[term]:
+                    tf_index[term].append(tf_weight)
+            doc_id += 1
+
+        return tf_index
+
+
+
 
     def count_doc_frequencies(self, docs):
         """
@@ -117,8 +136,17 @@ class Index(object):
         >>> res['c']
         1.0
         """
-        ###TODO
-        pass
+        freqs = defaultdict(float)
+        for doc in docs:
+            seen = defaultdict(int)
+            for term in doc:
+                if seen.get(term, False) == 0:
+                    freqs[term] += 1
+                seen[term] += 1
+        return freqs
+
+
+
 
     def query_to_vector(self, query_terms):
         """ Convert a list of query terms into a dict mapping each term to its
@@ -148,8 +176,13 @@ class Index(object):
         >>> res['b'] # doctest:+ELLIPSIS
         0.176...
         """
-        ###TODO
-        pass
+        idfs = {}
+        for term in query_terms:
+            if term not in idfs:
+                idf = math.log10(len(self.documents) / self.doc_freqs[term])
+                idfs[term] = idf
+        return idfs
+
 
     def tokenize(self, document):
         """ DO NOT MODIFY.
