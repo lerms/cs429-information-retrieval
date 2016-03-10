@@ -35,8 +35,12 @@ class Precision(EvaluatorFunction):
         >>> Precision().evaluate([1, 2, 3, 4], [2, 4])
         0.5
         """
-        ###TODO
-        pass
+        count = 0
+        for doc_id in relevant:
+            if doc_id in hits:
+                count += 1
+
+        return float(count / len(hits))
 
     def __repr__(self):
         return 'Precision'
@@ -51,8 +55,12 @@ class Recall(EvaluatorFunction):
         >>> Recall().evaluate([1, 2, 3, 4], [2, 5])
         0.5
         """
-        ###TODO
-        pass
+        tp = 0
+        for rel in relevant:
+            if rel in hits:
+                tp += 1
+
+        return float(tp / (tp + (len(relevant) - tp)))
 
     def __repr__(self):
         return 'Recall'
@@ -66,8 +74,10 @@ class F1(EvaluatorFunction):
         >>> F1().evaluate([1, 2, 3, 4], [2, 5])  # doctest:+ELLIPSIS
         0.333...
         """
-        ###TODO
-        pass
+        p = Precision.evaluate(self, hits, relevant)
+        r = Recall.evaluate(self, hits, relevant)
+        f1 = (2 * p * r) / (p + r)
+        return f1
 
     def __repr__(self):
         return 'F1'
@@ -81,8 +91,16 @@ class MAP(EvaluatorFunction):
         >>> MAP().evaluate([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], [1, 4, 6, 11, 12, 13, 14, 15, 16, 17])
         0.2
         """
-        ###TODO
-        pass
+        result = []
+        for i in range(1, len(hits)+1):
+            result.append(Precision.evaluate(self, hits[:i], relevant))
+        zipped = zip(hits, result)
+        mapped = []
+        for each in hits:
+            if each in relevant:
+                mapped.append(each)
+        return sum([y for x, y in zipped if x in mapped]) / len(hits)
+
 
     def __repr__(self):
         return 'MAP'

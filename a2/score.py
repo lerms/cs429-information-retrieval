@@ -3,7 +3,6 @@
 import abc
 from collections import defaultdict
 import math
-
 import index
 
 
@@ -27,8 +26,8 @@ def idf(term, index):
     >>> idf('e', idx) # doctest:+ELLIPSIS
     0.176...
     """
-    ###TODO
-    pass
+
+    return float(math.log10(len(index.documents) / index.doc_freqs[term]))
 
 
 class ScoringFunction:
@@ -57,13 +56,18 @@ class RSV(ScoringFunction):
     idf(e) = log10(3/2)
     >>> idx = index.Index(['a b c', 'c d e', 'c e f'])
     >>> rsv = RSV()
-    >>> rsv.score({'a': 1.}, idx)[1]  # doctest:+ELLIPSIS
+    >>> rsv.score({'a': 1., 'c': 3}, idx)[1]  # doctest:+ELLIPSIS
     0.4771...
     """
 
     def score(self, query_vector, index):
-        ###TODO
-        pass
+
+        rsvs = defaultdict(float)
+        for query_term in query_vector:
+            if index.index.get(query_term, False):
+                for posting in index.index[query_term]:
+                        rsvs[posting[0]] = idf(query_term, index)
+        return rsvs
 
     def __repr__(self):
         return 'RSV'
@@ -84,8 +88,16 @@ class BM25(ScoringFunction):
         self.b = b
 
     def score(self, query_vector, index):
-        ###TODO
-        pass
+
+        bm25 = defaultdict(float)
+        for query_term in query_vector:
+            for posting in index.index[query_term]:
+                score = idf(query_term, index) * (
+                    ((self.k + 1) * posting[1]) / (self.k * ((1 - self.b) +
+                    (self.b * (index.doc_lengths[posting[0]]) / index.mean_doc_length) +
+                    posting[1])))
+                bm25[posting[0]] = score
+        return bm25
 
     def __repr__(self):
         return 'BM25 k=%d b=%.2f' % (self.k, self.b)
@@ -103,8 +115,19 @@ class Cosine(ScoringFunction):
     0.792857...
     """
     def score(self, query_vector, index):
-        ###TODO
-        pass
+
+        cos_vals = defaultdict(float)
+        for query_term in query_vector:
+            if index.index.get(query_term, False):
+                for posting in index.index[query_term]:
+                    tf_idf = (1 + math.log10(posting[1])) * idf(query_term, index)
+                    cos_vals[posting[0]] += query_vector[query_term] * tf_idf
+
+        for doc_id in cos_vals:
+            cos_vals[doc_id] /= index.doc_norms[doc_id]
+
+        return cos_vals
+
 
     def __repr__(self):
         return 'Cosine'
