@@ -1,0 +1,71 @@
+Grade: 37.00/50.00
+
+3 Deduction(s):
+
+--------------
+#1: 5.00 points
+Failing test: test_bm25: 
+        @points=5
+        
+Traceback (most recent call last):
+  File "assignments-sol/a2/a2_test.py", line 115, in test_bm25
+    self.assertAlmostEqual(bm.score({'a': 1.}, idx)[1], 0.57026, 2)
+AssertionError: 0.9479230226218459 != 0.57026 within 2 places
+
+source:
+    def test_bm25(self):
+         """
+         @points=5
+         """
+         idx = index.Index(['a a b c', 'c d e', 'c e f'])
+         bm = BM25(k=1, b=.5)
+         self.assertAlmostEqual(bm.score({'a': 1.}, idx)[1], 0.61564032, 2)
+         bm = BM25(k=.5, b=.1)
+         self.assertAlmostEqual(bm.score({'a': 1.}, idx)[1], 0.57026, 2)
+--------------
+
+--------------
+#2: 5.00 points
+Failing test: test_rsv: 
+        @points=5
+        
+Traceback (most recent call last):
+  File "assignments-sol/a2/a2_test.py", line 105, in test_rsv
+    self.assertAlmostEqual(rsv.score({'e': 1., 'd': 1.}, idx)[2], 0.65, 2)
+AssertionError: 0.17609125905568124 != 0.65 within 2 places
+
+source:
+    def test_rsv(self):
+         """
+         @points=5
+         """
+         idx = index.Index(['a b c', 'c d e', 'c e f'])
+         rsv = RSV()
+         self.assertAlmostEqual(rsv.score({'a': 1.}, idx)[1], 0.477, 2)
+         self.assertAlmostEqual(rsv.score({'e': 1., 'd': 1.}, idx)[2], 0.65, 2)
+--------------
+
+--------------
+#3: 3.00 points
+Failing test: test_search: 
+        @points=3
+        
+Traceback (most recent call last):
+  File "assignments-sol/a2/a2_test.py", line 132, in test_search
+    result = search(query, scorer, idx)
+  File "students/lerms/a2/main.py", line 174, in search
+    return scores.keys()
+AttributeError: 'list' object has no attribute 'keys'
+
+source:
+    def test_search(self):
+         """
+         @points=3
+         """
+         idx = index.Index(['a a b c', 'c d e', 'c e f'])
+         scorer = Cosine()
+         query = 'e'
+         result = search(query, scorer, idx)
+         self.assertListEqual(result, [2, 3])
+--------------
+
