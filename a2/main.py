@@ -107,7 +107,7 @@ def parse_document_strings(strings):
     ...
     ... *STOP'''
     >>> parse_document_strings(string.split('\n'))
-    ['THE ALLIES AFTER NASSAU ', 'THE ROAD TO JAIL IS PAVED WITH ']
+    ['THE ALLIES AFTER NASSAU', 'THE ROAD TO JAIL IS PAVED WITH']
     """
     parsed = []
     for string in strings:
