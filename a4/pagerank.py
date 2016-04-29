@@ -30,8 +30,12 @@ def compute_pagerank(urls, inlinks, outlinks, b=.85, iters=20):
     >>> iter1['b']  # doctest:+ELLIPSIS
     0.333...
     """
-    ###TODO
-    pass
+    page_ranks = SortedDict().fromkeys(urls, 1.0)
+    for i in range(iters):
+        for url in urls:
+            rank = (1.0 / len(urls)) * (1.0 - b) + b * sum([page_ranks[w] / len(outlinks[w]) for w in inlinks[url]])
+            page_ranks[url] = rank
+    return page_ranks
 
 
 def get_top_pageranks(inlinks, outlinks, b, n=50, iters=20):
@@ -44,8 +48,9 @@ def get_top_pageranks(inlinks, outlinks, b, n=50, iters=20):
     >>> res[0]  # doctest:+ELLIPSIS
     ('a', 0.6666...
     """
-    ###TODO
-    pass
+    urls = SortedList(inlinks.keys())
+    page_ranks = compute_pagerank(urls, inlinks, outlinks, b, iters)  # can just take items
+    return sorted(page_ranks.items(), key=lambda x: x[1], reverse=True)[:n]
 
 
 def read_names(path):
@@ -70,8 +75,16 @@ def get_links(names, html):
     ... '''<a href="/wiki/Gerald_Jay_Sussman">xx</a> and <a href="/wiki/Not_Me">xx</a>''')
     SortedSet(['Gerald_Jay_Sussman'], key=None, load=1000)
     """
-    ###TODO
-    pass
+    links = []
+    soup = BeautifulSoup(html, 'html.parser')
+
+    for url in soup.find_all('a', href=True):
+        if url.get('href', False).startswith('/wiki/'):
+            name = url['href'].split('/wiki/', 1)[1]
+            if name in names:
+                links.append(name)
+    return SortedSet(links)
+
 
 def read_links(path):
     """
@@ -89,8 +102,23 @@ def read_links(path):
     Returns:
       A (inlinks, outlinks) tuple, as defined above (i.e., two SortedDicts)
     """
-    ###TODO
-    pass
+    names = read_names(path)
+    inlinks = SortedDict([[name, []] for name in names])
+    outlinks = SortedDict([[name, []] for name in names])
+
+    for name_file in glob.glob(path + os.sep + '*'):
+        curr_name = name_file[5:]
+        for link in get_links(names, open(name_file)):
+            if curr_name == link:
+                continue
+            outlinks[curr_name].append(link)
+            inlinks[link].append(curr_name)
+
+    for key in inlinks:
+        inlinks[key] = SortedSet(inlinks[key])
+        outlinks[key] = SortedSet(outlinks[key])
+
+    return inlinks, outlinks
 
 
 def print_top_pageranks(topn):
