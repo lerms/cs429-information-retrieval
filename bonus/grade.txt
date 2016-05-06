@@ -1,0 +1,76 @@
+Grade: 5.00/15.00
+
+2 Deduction(s):
+
+--------------
+#1: 7.00 points
+Failing test: test_error: 
+        Test that errors match.
+        @points=7
+        
+Traceback (most recent call last):
+  File "assignments-sol/bonus/bonus_test.py", line 42, in test_error
+    self.assertTrue(False, msg='took more than 100 seconds to run')
+AssertionError: False is not true : took more than 100 seconds to run
+
+source:
+    def test_error(self):
+         """
+         Test that errors match.
+         @points=7
+         """
+         profiles = read_profiles('profiles.txt.gz')
+         signal.signal(signal.SIGALRM, handler)
+         signal.alarm(300)
+         toolong = False
+         try:
+             profiles = prune_terms(profiles, min_df=2)
+             km = KMeans(k=10)
+             km.cluster(profiles, iters=5)
+             error = km.error(profiles)
+             self.assertAlmostEqual(error, 31108.1, 1)
+         except:
+             print('time is up...')
+             toolong = True
+         if toolong:
+             self.assertTrue(False, msg='took more than 100 seconds to run')
+         signal.alarm(0)
+--------------
+
+--------------
+#2: 3.00 points
+Failing test: test_time: 
+        Test run time.
+        @points=3
+        
+Traceback (most recent call last):
+  File "assignments-sol/bonus/bonus_test.py", line 66, in test_time
+    self.assertTrue(False, msg='took more than 100 seconds to run')
+AssertionError: False is not true : took more than 100 seconds to run
+
+source:
+    def test_time(self):
+         """
+         Test run time.
+         @points=3
+         """
+         now = time.time()
+         profiles = read_profiles('profiles.txt.gz')
+         signal.signal(signal.SIGALRM, handler)
+         signal.alarm(100)
+         toolong = False
+         try:
+             profiles = prune_terms(profiles, min_df=2)
+             km = KMeans(k=10)
+             km.cluster(profiles, iters=2)
+             error = km.error(profiles)
+             seconds = time.time() - now
+             self.assertGreater(100, seconds, msg='too slow. took %.2f seconds to do 2 iterations, but it should take much less than that. Perhaps you are iterating through the documents more than needed?' % seconds)
+         except:
+             print('time is up...')
+             toolong = True
+         if toolong:
+             self.assertTrue(False, msg='took more than 100 seconds to run')
+         signal.alarm(0)
+--------------
+
