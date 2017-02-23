@@ -3,7 +3,7 @@
 import abc
 from collections import defaultdict
 import math
-import index
+from a2 import index
 
 
 def idf(term, index):
@@ -61,12 +61,10 @@ class RSV(ScoringFunction):
     """
 
     def score(self, query_vector, index):
-
         rsvs = defaultdict(float)
         for query_term in query_vector:
-            if index.index.get(query_term, False):
-                for posting in index.index[query_term]:
-                        rsvs[posting[0]] = idf(query_term, index)
+            for posting in index.index[query_term]:
+                    rsvs[posting[0]] = idf(query_term, index)
         return rsvs
 
     def __repr__(self):
@@ -118,10 +116,9 @@ class Cosine(ScoringFunction):
 
         cos_vals = defaultdict(float)
         for query_term in query_vector:
-            if index.index.get(query_term, False):
-                for posting in index.index[query_term]:
-                    tf_idf = (1 + math.log10(posting[1])) * idf(query_term, index)
-                    cos_vals[posting[0]] += query_vector[query_term] * tf_idf
+            for posting in index.index[query_term]:
+                tf_idf = (1 + math.log10(posting[1])) * idf(query_term, index)
+                cos_vals[posting[0]] += query_vector[query_term] * tf_idf
 
         for doc_id in cos_vals:
             cos_vals[doc_id] /= index.doc_norms[doc_id]

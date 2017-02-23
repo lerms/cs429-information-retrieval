@@ -1,5 +1,7 @@
 Grade: 37.00/50.00
 
+FIXED, All doctests now pass. 02/23/2017
+
 3 Deduction(s):
 
 --------------

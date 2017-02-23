@@ -1,7 +1,6 @@
 """ Assignment 2
 """
 import abc
-
 import numpy as np
 
 

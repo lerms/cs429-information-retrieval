@@ -1,7 +1,9 @@
 from collections import defaultdict
 import tarfile
 import tabulate
-import index, evaluate, score
+from a2 import evaluate, index, score
+
+
 
 
 def parse_relevance_strings(strings):
@@ -113,7 +115,7 @@ def parse_document_strings(strings):
     for string in strings:
         if string:
             if not string.startswith('*'):
-                parsed.append(string + ' ')
+                parsed.append(string.strip())
     return parsed
 
 

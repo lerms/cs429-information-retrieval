@@ -138,11 +138,9 @@ class Index(object):
         """
         freqs = defaultdict(float)
         for doc in docs:
-            seen = defaultdict(int)
-            for term in doc:
-                if seen.get(term, False) == 0:
-                    freqs[term] += 1
-                seen[term] += 1
+            counter = Counter(doc)
+            for c in counter.keys():
+                freqs[c] += 1
         return freqs
 
 
