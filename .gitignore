@@ -1,3 +1,7 @@
+#intellij
+.idea
+.idea/
+*/.idea
 # Emacs
 *~
 

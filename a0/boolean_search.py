@@ -29,9 +29,6 @@ def tokenize(document):
     ['hi', 'there', 'what', 's', 'going', 'on']
     """
     # found it, lowercase the doc to prevent a second iteration
-    list = []
-    for term in re.findall('\w+', document.lower()):
-        list.append(term)
 
     return [term for term in re.findall('\w+', document.lower())]
 
@@ -58,11 +55,7 @@ def create_index(tokens):
     index = defaultdict(list)
     for i, token in enumerate(tokens):
         for term in token:
-            if index.get(term, False):  # cool pythonic way to determine if a key maps to a value
-                index[term].append(i)
-            else:
-                index[term] = [i]
-    sorted(index.values())
+            index[term].append(i)
     return index
 
 
@@ -81,18 +74,18 @@ def intersect(list1, list2):
     >>> intersect([1, 2], [3, 4])
     []
     """
-    answer = []
+    intersection = []
     i, j = 0, 0
     while i < len(list1) and j < len(list2):
         if list1[i] == list2[j]:
-            answer.append(list1[i])
+            intersection.append(list1[i])
             i += 1
             j += 1
         elif list1[i] < list2[j]:
             i += 1
         else:
             j += 1
-    return answer
+    return intersection
 
 
 def sort_by_num_postings(words, index):
@@ -110,15 +103,9 @@ def sort_by_num_postings(words, index):
     >>> sort_by_num_postings(['a', 'b', 'c'], {'a': [0, 1], 'b': [1, 2, 3], 'c': [4]})
     ['c', 'a', 'b']
     """
-
-
-    {2 : ['a']}
-    answer = defaultdict(lambda x: sorted(x))
-    for word in words:
-        if index.get(word, False):
-            answer[len(index[word])] = word
-
-    return [word for word in answer.values()]
+    words = set(words)
+    unfiltered = sorted(index, key=lambda k: len(index[k]))
+    return [word for word in unfiltered if word in words]
 
 
 def search(index, query):
@@ -141,9 +128,8 @@ def search(index, query):
     [1]
     """
     terms = sort_by_num_postings(tokenize(query), index)
-    result = []
     if len(terms) == 0:  # avoiding extra work
-        return result
+        return []
     result = index[terms.pop(0)]  # need to pop first element to use in first loop iteration
     for i, term in enumerate(terms):
         result = intersect(result, index[terms[i]])
