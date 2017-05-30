@@ -2,30 +2,29 @@
 Assignment 5: K-Means. See the instructions to complete the methods below.
 """
 
-from collections import Counter, defaultdict
+from collections import Counter
 import gzip
 import math
 import numpy as np
+import time
 
 
 class Cluster(object):
 
-    def __init__(self, num):
-        self.num = num
-        self.docs = list()
-        self.count = 0
+    def __init__(self, id):
+        self.id = id
+        self.docs = []
         self.er = 0
 
     def add_doc(self, doc):
         self.docs.append(doc)
         self.er += doc[1]
-        self.count += 1
 
     def __eq__(self, other):
-        return self.num == other.num
+        return self.id == other.num
 
     def __str__(self):
-        return 'CLUSTER ' + str(self.num)
+        return 'CLUSTER ' + str(self.id)
 
 
 class KMeans(object):
@@ -53,37 +52,33 @@ class KMeans(object):
           2c) print sizes and error
         """
 
-        for i in range(0, self.k):
-            self.mean_vectors.append((documents[i], self.sqnorm(documents[i])))
+        self.mean_vectors = [(documents[i], self.sqnorm(documents[i])) for i in range(self.k)]
 
         for i in range(0, iters):
             self.compute_clusters(documents)
             self.compute_means()
             self.error()
-            print([cluster.count for cluster in self.clusters])
+            print([len(cluster.docs) for cluster in self.clusters])
             print("%.2f" % self.er)
 
     def compute_means(self):
         """ Compute the mean vectors for each cluster (results stored in an
         instance variable of your choosing)."""
 
-        # self.cluster_length = [len(cluster) for cluster in self.clusters]
         self.er = 0
         for cluster in self.clusters:
             mean_vector = Counter()
             for doc, distance in cluster.docs:
                 mean_vector.update(doc)
             for doc in mean_vector:
-                mean_vector[doc] = float(mean_vector[doc]) / float(self.clusters[cluster.num].count)
-            self.mean_vectors[cluster.num] = (mean_vector, self.sqnorm(mean_vector))
+                mean_vector[doc] = float(mean_vector[doc]) / len(self.clusters[cluster.id].docs)
+            self.mean_vectors[cluster.id] = (mean_vector, self.sqnorm(mean_vector))
 
     def compute_clusters(self, documents):
         """ Assign each document to a cluster. (Results stored in an instance
         variable of your choosing). """
 
-        self.clusters = []
-        for i in range(0, self.k):
-            self.clusters.append(Cluster(i))
+        self.clusters = [Cluster(i) for i in range(self.k)]
 
         for doc in documents:
             distances = []
@@ -99,17 +94,18 @@ class KMeans(object):
     def sqnorm(self, doc):
         """ Return the vector length of a dictionary d, defined as the sum of
         the squared values in this dict. """
-        norm = 0.0
-        for term in doc:
-            norm += float(doc[term]) ** 2
-        return norm
+        return sum([v ** 2 for v in doc.values()])
 
     def distance(self, doc, mean, mean_norm):
         """ Return the Euclidean distance between a document and a mean vector.
         See here for a more efficient way to compute:
         http://en.wikipedia.org/wiki/Cosine_similarity#Properties"""
-        sq_norm = self.sqnorm(doc)
-        to_sqr = (mean_norm + sq_norm) - 2.0 * dot_product(doc, mean)
+        doc_vector, mean_vector = [], []
+        for i, key in enumerate(doc.keys()):
+            doc_vector.append(doc[key])
+            mean_vector.append(mean[key])
+
+        to_sqr = (mean_norm + self.sqnorm(doc)) - 2.0 * np.dot(doc_vector, mean_vector)
         return math.sqrt(to_sqr)
 
     def error(self):
@@ -117,9 +113,9 @@ class KMeans(object):
         Euclidean distance between each document and its assigned mean vector."""
         self.er = 0
         for cluster in self.clusters:
-            mean_norm = self.mean_vectors[cluster.num][1]
+            mean_norm = self.mean_vectors[cluster.id][1]
             for doc, distance in cluster.docs:
-                self.er += self.distance(doc, self.mean_vectors[cluster.num][0], mean_norm)
+                self.er += self.distance(doc, self.mean_vectors[cluster.id][0], mean_norm)
 
     def print_top_docs(self, n=10):
         """ Print the top n documents from each cluster. These are the
@@ -137,13 +133,6 @@ class KMeans(object):
                 print(' '.join(sorted(to_print[j][0].keys())))
 
 
-def dot_product(doc, mean):
-    dot_prod = 0.0
-    for term in doc:
-        dot_prod += float(doc[term]) * float(mean[term])
-    return dot_prod
-
-
 def prune_terms(docs, min_df=3):
     """ Remove terms that don't occur in at least min_df different
     documents. Return a list of Counters. Omit documents that are empty after
@@ -152,24 +141,18 @@ def prune_terms(docs, min_df=3):
     [Counter({'a': 1}), Counter({'a': 1})]
     """
 
-    doc_freq = defaultdict(int)
-    for doc in docs:
-        seen = set()
-        for term in doc:
-            if term not in seen:
-                doc_freq[term] += 1
-                seen.add(term)
+    doc_freq = Counter()
+    for count in docs:
+        for c in count.keys():
+            doc_freq[c] += 1
 
-    result_counters = []
-    for doc in docs:
-        valid = defaultdict(int)
-        for term in doc:
-            if doc_freq[term] >= min_df:
-                valid[term] = doc[term]
-        if len(valid) > 0:
-            result_counters.append(Counter(valid))
+    for counter in docs:
+        keys = set(counter.keys())
+        for key in keys:
+            if doc_freq[key] < min_df:
+                del counter[key]
 
-    return result_counters
+    return [Counter(d) for d in docs if len(d) > 0]
 
 
 def read_profiles(filename):
@@ -183,12 +166,15 @@ def read_profiles(filename):
 
 
 def main():
+    start = time.time()
     profiles = read_profiles('profiles.txt.gz')
     print('read', len(profiles), 'profiles.')
     profiles = prune_terms(profiles, min_df=2)
     km = KMeans(k=10)
     km.cluster(profiles, iters=20)
     km.print_top_docs()
+    elapsed = time.time() - start
+    print('took', elapsed, 'seconds :)')
 
 
 if __name__ == '__main__':

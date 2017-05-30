@@ -1,5 +1,7 @@
 Grade: 5.00/15.00
 
+FIXED, NOW TAKES ~44 seconds for everything
+
 2 Deduction(s):
 
 --------------
