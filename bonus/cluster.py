@@ -142,9 +142,9 @@ def prune_terms(docs, min_df=3):
     """
 
     doc_freq = Counter()
-    for count in docs:
-        for c in count.keys():
-            doc_freq[c] += 1
+    for doc in docs:
+        for term in doc.keys():
+            doc_freq.update(term)
 
     for counter in docs:
         keys = set(counter.keys())
@@ -152,7 +152,7 @@ def prune_terms(docs, min_df=3):
             if doc_freq[key] < min_df:
                 del counter[key]
 
-    return [Counter(d) for d in docs if len(d) > 0]
+    return [Counter(doc) for doc in docs if len(doc) > 0]
 
 
 def read_profiles(filename):
