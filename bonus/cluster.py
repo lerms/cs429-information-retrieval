@@ -21,7 +21,7 @@ class Cluster(object):
         self.er += doc[1]
 
     def __eq__(self, other):
-        return self.id == other.num
+        return self.id == other.id
 
     def __str__(self):
         return 'CLUSTER ' + str(self.id)
